@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Comunicações Detalhado - IFTO Investimentos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* SETUP GERAL */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0;
+            font-family: 'Urbanist', sans-serif;
+            height: 100vh;
+            overflow: hidden; /* Esconde barra de rolagem para focar na navegação por botões */
+        }
+
+        /* CONTAINER DO SLIDE */
+        .slide-container {
+            height: 100vh;
+            width: 100%;
+            display: none; /* Oculto por padrão */
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Classe para mostrar o slide ativo */
+        .slide-container.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CONTEUDO INTERNO LIMITADO */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* TIPOGRAFIA */
+        h1 {
+            font-size: 80px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #34d399, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 48px;
+            color: #f8fafc;
+            margin-bottom: 40px;
+            border-left: 6px solid #34d399;
+            padding-left: 20px;
+        }
+
+        h3 {
+            font-size: 28px;
+            color: #60a5fa; /* Azul claro */
+            margin-bottom: 15px;
+            margin-top: 20px;
+        }
+
+        p, li {
+            font-size: 20px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        /* LAYOUTS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        /* CAIXAS DE DESTAQUE */
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 16px;
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #34d399;
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            color: #34d399;
+            margin-bottom: 15px;
+        }
+
+        /* TABELAS MODERNAS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            font-size: 18px;
+        }
+
+        th {
+            background: #334155;
+            color: #34d399;
+            text-align: left;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #475569;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* TAGS */
+        .tag {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .tag-high { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .tag-med { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+        .tag-low { background: rgba(52, 211, 153, 0.2); color: #34d399; }
+
+        /* IMAGENS */
+        .img-box {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #475569;
+            height: 400px;
+        }
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* RODAPÉ DO SLIDE */
+        .footer-info {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        /* BOTOES DE NAVEGACAO */
+        .nav-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 120px; /* Espaço para o número do slide */
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .btn-nav {
+            background-color: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-nav:hover {
+            background-color: #34d399;
+            color: #0f172a;
+            border-color: #34d399;
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #1e293b;
+            color: #64748b;
+            border-color: #334155;
+        }
+
+        .btn-nav i {
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: CAPA -->
+    <div class="slide-container active" id="slide-0">
+        <div class="slide-content" style="align-items: center; text-align: center;">
+            <div style="font-size: 80px; color: #34d399; margin-bottom: 20px;"><i class="fa-solid fa-tower-broadcast"></i></div>
+            <h1>Gerenciamento de Comunicações</h1>
+            <p style="font-size: 28px; color: #94a3b8;">Projeto: Banco Digital IFTO Investimentos</p>
+            <div style="margin-top: 50px; display: flex; gap: 20px;">
+                <div class="tag tag-low" style="font-size: 18px; padding: 10px 20px;">PMBOK® 4ª Edição</div>
+                <div class="tag tag-med" style="font-size: 18px; padding: 10px 20px;">MVP Fintech</div>
+            </div>
+        </div>
+        <div class="footer-info">01 - Banco Digital</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" disabled><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">1 / 12</div>
+    </div>
+
+    <!-- SLIDE 2: OBJETIVOS E CONTEXTO -->
+    <div class="slide-container" id="slide-1">
+        <div class="slide-content">
+            <h2>Contexto do Projeto e Desafios de Comunicação</h2>
+            <div class="grid-2">
+                <div>
+                    <p>O projeto visa criar um <strong>MVP de Banco Digital</strong> funcional em 16 meses. O gerenciamento de comunicações é crítico devido à alta regulação e sensibilidade dos dados.</p>
+                    <div class="card" style="margin-top: 30px;">
+                        <h3><i class="fa-solid fa-triangle-exclamation"></i> Riscos de Comunicação</h3>
+                        <ul>
+                            <li><strong>Vazamento de Dados:</strong> Comunicação insegura pode violar a LGPD.</li>
+                            <li><strong>Ruído Regulatório:</strong> Interpretação errada das normas do BCB.</li>
+                            <li><strong>Stakeholders Dispersos:</strong> Equipe técnica remota vs. Diretoria presencial.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box">
+                    <img src="assets/1.png" alt="Interface de aplicativo fintech">
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Introdução</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">2 / 12</div>
+    </div>
+
+    <!-- SLIDE 3: VISÃO GERAL DOS PROCESSOS -->
+    <div class="slide-container" id="slide-2">
+        <div class="slide-content">
+            <h2>Visão Geral dos Processos (Capítulo 10)</h2>
+            <p>Os processos garantem a geração, coleta, distribuição, armazenamento e descarte adequados das informações do projeto.</p>
+            <div class="grid-3" style="margin-top: 40px;">
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>10.1 Identificar Partes Interessadas</h3>
+                    <p>Iniciação: Quem será afetado pelo banco digital?</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-compass"></i></div>
+                    <h3>10.2 Planejar Comunicações</h3>
+                    <p>Planejamento: Quem precisa de quê, quando e como?</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                    <h3>10.3 Distribuir Informações</h3>
+                    <p>Execução: Disponibilizar as informações planejadas.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-handshake"></i></div>
+                    <h3>10.4 Gerenciar Expectativas</h3>
+                    <p>Execução: Trabalhar com stakeholders para atender necessidades.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                    <h3>10.5 Reportar Desempenho</h3>
+                    <p>Monitoramento: Coletar dados de status e progresso (EVA).</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">PMBOK Overview</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">3 / 12</div>
+    </div>
+
+    <!-- SLIDE 4: 10.1 IDENTIFICAR PARTES INTERESSADAS (DETALHE) -->
+    <div class="slide-container" id="slide-3">
+        <div class="slide-content">
+            <h2>10.1 Identificar Partes Interessadas</h2>
+            <p>Análise detalhada de quem impacta ou é impactado pelo MVP do Banco Digital.</p>
+            
+            <div style="margin-top: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stakeholder</th>
+                            <th>Tipo</th>
+                            <th>Interesse (1-5)</th>
+                            <th>Poder (1-5)</th>
+                            <th>Estratégia de Gestão</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Banco Central (BCB)</strong></td>
+                            <td>Externo</td>
+                            <td>5 (Alto)</td>
+                            <td>5 (Alto)</td>
+                            <td><span class="tag tag-high">Gerenciar Atentamente</span> Compliance total.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Diretoria IFTO</strong></td>
+                            <td>Interno</td>
+                            <td>5 (Alto)</td>
+                            <td>5 (Alto)</td>
+                            <td><span class="tag tag-high">Gerenciar Atentamente</span> Foco no ROI.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Equipe de Dev</strong></td>
+                            <td>Interno</td>
+                            <td>4 (Médio)</td>
+                            <td>3 (Médio)</td>
+                            <td><span class="tag tag-med">Manter Informado</span> Daily meetings.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fornecedor ID (KYC)</strong></td>
+                            <td>Externo</td>
+                            <td>3 (Médio)</td>
+                            <td>2 (Baixo)</td>
+                            <td><span class="tag tag-low">Monitorar</span> SLAs de API.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Usuários Beta</strong></td>
+                            <td>Cliente</td>
+                            <td>2 (Baixo)</td>
+                            <td>4 (Alto impacto)</td>
+                            <td><span class="tag tag-med">Manter Satisfeito</span> UX/UI.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.1</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">4 / 12</div>
+    </div>
+
+    <!-- SLIDE 5: MATRIZ DE PODER X INTERESSE VISUAL -->
+    <div class="slide-container" id="slide-4">
+        <div class="slide-content">
+            <h2>Análise: Matriz Poder x Interesse</h2>
+            <div class="grid-2">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <p>A classificação correta define o esforço de comunicação.</p>
+                    <div class="card">
+                        <h3>Quadrante Crítico (Alto Poder / Alto Interesse)</h3>
+                        <p>Para este projeto, o <strong>Banco Central</strong> e os <strong>Investidores Principais</strong> residem aqui. A falha na comunicação com este grupo resulta no cancelamento do projeto (perda de licença ou funding).</p>
+                    </div>
+                    <div class="card">
+                        <h3>Quadrante de Risco (Alto Poder / Baixo Interesse)</h3>
+                        <p>Ex: <strong>Jurídico Externo</strong>. Não acompanham o dia a dia, mas podem vetar uma feature por risco legal. Devem ser mantidos satisfeitos.</p>
+                    </div>
+                </div>
+                <div class="img-box" style="background: white; padding: 20px; display: flex; align-items: center; justify-content: center;">
+                    <!-- Diagrama CSS simples -->
+                    <div style="position: relative; width: 100%; height: 100%; border-left: 4px solid #333; border-bottom: 4px solid #333;">
+                        <span style="position: absolute; top: -20px; left: 10px; color: #333; font-weight: bold;">PODER +</span>
+                        <span style="position: absolute; bottom: 10px; right: -40px; color: #333; font-weight: bold;">INTERESSE +</span>
+                        
+                        <!-- Quadrantes -->
+                        <div style="position: absolute; top: 10%; right: 10%; background: #ef4444; width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">BCB & <br>Diretoria</div>
+                        
+                        <div style="position: absolute; bottom: 10%; right: 10%; background: #3b82f6; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">Equipe</div>
+                        
+                        <div style="position: absolute; top: 10%; left: 10%; background: #eab308; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">Legal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.1 - Ferramentas</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">5 / 12</div>
+    </div>
+
+    <!-- SLIDE 6: 10.2 PLANEJAR AS COMUNICAÇÕES -->
+    <div class="slide-container" id="slide-5">
+        <div class="slide-content">
+            <h2>10.2 Planejar as Comunicações</h2>
+            <p>Definição das tecnologias, métodos e frequência. No cenário de Fintech, a segurança é o requisito nº 1.</p>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <h3>Tecnologias</h3>
+                    <ul style="font-size: 16px;">
+                        <li><i class="fa-brands fa-slack"></i> <strong>Slack:</strong> Comunicação Rápida (Interna).</li>
+                        <li><i class="fa-brands fa-jira"></i> <strong>Jira:</strong> Tracking de Tarefas (Assíncrono).</li>
+                        <li><i class="fa-solid fa-file-shield"></i> <strong>Dataroom (Intralinks):</strong> Auditorias e Docs Regulatórios.</li>
+                        <li><i class="fa-solid fa-envelope"></i> <strong>E-mail Criptografado:</strong> Formalizações Jurídicas.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Restrições (Constraints)</h3>
+                    <ul style="font-size: 16px;">
+                        <li><strong>LGPD:</strong> Nenhum dado de cliente (PII) pode ser compartilhado via Slack/Whatsapp.</li>
+                        <li><strong>Sigilo Bancário:</strong> Acesso aos dados de transações restrito por IP e VPN.</li>
+                        <li><strong>Orçamento:</strong> Limite de licenças de software corporativo.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Glossário Comum</h3>
+                    <p style="font-size: 16px;">Para evitar ruídos entre Tech e Business:</p>
+                    <ul style="font-size: 16px;">
+                        <li><strong>KYC:</strong> Know Your Customer (Cadastro).</li>
+                        <li><strong>AML:</strong> Anti-Money Laundering.</li>
+                        <li><strong>API Gateway:</strong> Porta de entrada das transações.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.2</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">6 / 12</div>
+    </div>
+
+    <!-- SLIDE 7: MATRIZ DE COMUNICAÇÃO DETALHADA -->
+    <div class="slide-container" id="slide-6">
+        <div class="slide-content">
+            <h2>Matriz de Comunicação do Projeto</h2>
+            <p>O "Quem, O Que, Quando e Como" oficial do projeto.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evento / Relatório</th>
+                        <th>Objetivo</th>
+                        <th>Público</th>
+                        <th>Frequência</th>
+                        <th>Responsável</th>
+                        <th>Meio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Daily Scrum</strong></td>
+                        <td>Sincronização de tarefas e bloqueios</td>
+                        <td>Equipe Tech</td>
+                        <td>Diária (09:00)</td>
+                        <td>Scrum Master</td>
+                        <td>Videoconf.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Relatório de Status (One Pager)</strong></td>
+                        <td>Progresso, Riscos e Budget</td>
+                        <td>Sponsors / Diretoria</td>
+                        <td>Semanal (Sex)</td>
+                        <td>Gerente de Projeto</td>
+                        <td>E-mail / PDF</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Comitê de Risco e Compliance</strong></td>
+                        <td>Aprovação de processos regulatórios</td>
+                        <td>Jurídico, DPO, Tech Lead</td>
+                        <td>Quinzenal</td>
+                        <td>Compliance Officer</td>
+                        <td>Presencial</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reporte ao Banco Central</strong></td>
+                        <td>Envio de CADOCs e volumetria</td>
+                        <td>Regulador (BCB)</td>
+                        <td>Mensal</td>
+                        <td>Diretor Financeiro</td>
+                        <td>Sisbacen</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="footer-info">Processo 10.2 - Saída Principal</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">7 / 12</div>
+    </div>
+
+    <!-- SLIDE 8: 10.3 DISTRIBUIR INFORMAÇÕES -->
+    <div class="slide-container" id="slide-7">
+        <div class="slide-content">
+            <h2>10.3 Distribuir Informações</h2>
+            <p>Execução do plano. Garantir que a informação flua sem barreiras, mas com segurança.</p>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Métodos de Distribuição</h3>
+                    <div style="margin-top: 15px;">
+                        <p><strong><i class="fa-solid fa-arrow-right-to-bracket"></i> Comunicação Push (Ativa):</strong></p>
+                        <p style="font-size: 16px; margin-left: 20px;">E-mails, Relatórios de Status enviados, Memorandos. Usado para garantir que a informação chegou (ex: Nova regra de firewall).</p>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p><strong><i class="fa-solid fa-box-archive"></i> Comunicação Pull (Passiva):</strong></p>
+                        <p style="font-size: 16px; margin-left: 20px;">Intranet, Base de Conhecimento (Confluence), Repositório de Código. Usado para documentação técnica extensa e políticas internas.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Lições Aprendidas (Em andamento)</h3>
+                    <p>Durante a distribuição, coletamos feedback:</p>
+                    <ul>
+                        <li><span class="tag tag-med">Problema</span> E-mails técnicos longos eram ignorados pela diretoria.</li>
+                        <li><span class="tag tag-low">Solução</span> Criação de Dashboards Visuais (Power BI) com semáforos (Verde/Amarelo/Vermelho) para status executivo.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.3</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">8 / 12</div>
+    </div>
+
+    <!-- SLIDE 9: 10.4 GERENCIAR EXPECTATIVAS DAS PARTES INTERESSADAS -->
+    <div class="slide-container" id="slide-8">
+        <div class="slide-content">
+            <h2>10.4 Gerenciar Expectativas</h2>
+            <p>Trata-se de negociar e comunicar realidades versus desejos. Uso intensivo de Soft Skills.</p>
+            <div class="grid-2">
+                <div>
+                    <h3>Cenário Comum no Projeto:</h3>
+                    <p><em>"O investidor quer antecipar o lançamento do PIX em 2 meses."</em></p>
+                    <div class="card" style="border-left: 5px solid #facc15;">
+                        <h4>Ação do GP:</h4>
+                        <ol style="margin-left: 20px;">
+                            <li>Consultar a equipe técnica (Impacto).</li>
+                            <li>Identificar riscos (Segurança/Testes reduzidos).</li>
+                            <li>Comunicar as opções ao Stakeholder: "Podemos antecipar, mas o custo sobe 20% e o risco de falha aumenta em 40%".</li>
+                        </ol>
+                    </div>
+                </div>
+                <div>
+                    <h3>Ferramenta Principal: Registro de Questões (Issue Log)</h3>
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Questão</th>
+                            <th>Impacto</th>
+                            <th>Responsável</th>
+                            <th>Status</th>
+                        </tr>
+                        <tr>
+                            <td>001</td>
+                            <td>Atraso na validação da API do Serasa</td>
+                            <td>Impede cadastro de novos usuários (Onboarding)</td>
+                            <td>Tech Lead</td>
+                            <td><span class="tag tag-high">Crítico</span></td>
+                        </tr>
+                        <tr>
+                            <td>002</td>
+                            <td>Mudança na regra de IOF pelo governo</td>
+                            <td>Reajuste no cálculo de câmbio do app</td>
+                            <td>Product Owner</td>
+                            <td><span class="tag tag-med">Em Análise</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.4</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">9 / 12</div>
+    </div>
+
+    <!-- SLIDE 10: 10.5 REPORTAR DESEMPENHO -->
+    <div class="slide-container" id="slide-9">
+        <div class="slide-content">
+            <h2>10.5 Reportar Desempenho</h2>
+            <p>Coleta e análise de dados de base (Baseline) versus Realizado.</p>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <h3>Análise de Valor Agregado (EVA)</h3>
+                    <p style="font-size: 16px;">Status no Mês 8:</p>
+                    <ul style="font-size: 16px;">
+                        <li><strong>VP (Valor Planejado):</strong> R$ 800.000</li>
+                        <li><strong>VA (Valor Agregado):</strong> R$ 750.000</li>
+                        <li><strong>CR (Custo Real):</strong> R$ 900.000</li>
+                        <hr style="border-color: #475569; margin: 10px 0;">
+                        <li style="color: #f87171;"><strong>IDC (Índice de Desempenho de Custos):</strong> 0.83 (Estouro de custo).</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Previsões (Forecasts)</h3>
+                    <p>Com base no desempenho atual:</p>
+                    <p>O projeto deve terminar com <strong>15% de custo acima do orçamento</strong> se não houver correção (Refatoração de código cara).</p>
+                    <p>O prazo (SPI) está em 0.93 (Leve atraso).</p>
+                </div>
+                <div class="card">
+                    <h3>Visualização de Dados</h3>
+                    <!-- Simulação de gráfico de barras com CSS -->
+                    <div style="display: flex; align-items: flex-end; height: 150px; gap: 10px; margin-top: 20px;">
+                        <div style="width: 30%; background: #64748b; height: 80%; position: relative;"><span style="position: absolute; top: -25px; left: 5px; font-size: 12px;">Planejado</span></div>
+                        <div style="width: 30%; background: #34d399; height: 75%; position: relative;"><span style="position: absolute; top: -25px; left: 5px; font-size: 12px;">Agregado</span></div>
+                        <div style="width: 30%; background: #ef4444; height: 90%; position: relative;"><span style="position: absolute; top: -25px; left: 5px; font-size: 12px;">Gasto Real</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Processo 10.5</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">10 / 12</div>
+    </div>
+
+    <!-- SLIDE 11: CONCLUSÃO E ARTEFATOS FINAIS -->
+    <div class="slide-container" id="slide-10">
+        <div class="slide-content">
+            <h2>Resumo dos Artefatos de Comunicação</h2>
+            <p>O que entregamos ao final da fase de planejamento e execução das comunicações:</p>
+            
+            <div class="grid-2">
+                <ul>
+                    <li><i class="fa-solid fa-check" style="color: #34d399;"></i> <strong>Plano de Gerenciamento de Comunicações:</strong> O guia mestre.</li>
+                    <li><i class="fa-solid fa-check" style="color: #34d399;"></i> <strong>Atualizações nos Ativos de Processos Organizacionais:</strong> Templates de e-mail, lições aprendidas sobre criptografia.</li>
+                    <li><i class="fa-solid fa-check" style="color: #34d399;"></i> <strong>Registro de Questões Atualizado:</strong> Histórico de problemas resolvidos.</li>
+                    <li><i class="fa-solid fa-check" style="color: #34d399;"></i> <strong>Relatórios de Desempenho:</strong> Histórico do EVA para auditoria.</li>
+                </ul>
+                <div class="card" style="text-align: center; border-color: #34d399;">
+                    <h3 style="color: #fff;">Mensagem Final</h3>
+                    <p style="font-size: 24px; font-style: italic;">"No setor bancário, comunicação não é apenas sobre clareza, é sobre rastreabilidade, auditoria e confiança."</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Conclusão</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" onclick="nextSlide()">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">11 / 12</div>
+    </div>
+
+    <!-- SLIDE 12: CONCLUSÃO FINAL -->
+    <div class="slide-container" id="slide-11">
+        <div class="slide-content">
+            <h2>Conclusão e Próximos Passos</h2>
+            <div class="grid-2">
+                <div>
+                    <p>O sucesso do <strong>IFTO Investimentos</strong> não depende apenas da tecnologia, mas da capacidade de articular requisitos regulatórios complexos com agilidade de desenvolvimento.</p>
+                    <p>Este plano de comunicação garante que o <strong>fluxo de informação</strong> seja seguro, auditável e eficiente, mitigando riscos críticos de compliance e mantendo o alinhamento estratégico com os investidores.</p>
+                </div>
+                <div class="card" style="border-color: #34d399;">
+                    <h3><i class="fa-solid fa-flag-checkered"></i> Encerramento</h3>
+                    <p>Com a aprovação deste plano, iniciamos a execução imediata das matrizes de comunicação e configuração das ferramentas (Jira/Slack) para o Sprint 1.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">Conclusão Estratégica</div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+            <button class="btn-nav" disabled>Próximo <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="slide-number">12 / 12</div>
+    </div>
+
+    <!-- SCRIPT DE NAVEGAÇÃO -->
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 12;
+
+        function updateSlideVisibility() {
+            // Esconde todos
+            for (let i = 0; i < totalSlides; i++) {
+                document.getElementById(`slide-${i}`).classList.remove('active');
+            }
+            // Mostra atual
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlideVisibility();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlideVisibility();
+            }
+        }
+
+        // Navegação por teclado
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "ArrowRight" || event.key === " ") {
+                nextSlide();
+            } else if (event.key === "ArrowLeft") {
+                prevSlide();
+            }
+        });
+    </script>
+
+</body>
+</html>
